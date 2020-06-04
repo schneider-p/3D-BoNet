@@ -11,7 +11,7 @@ scipy 1.3
 
 h5py 2.9
 
-open3d-python 0.3.0
+open3d-python 0.10.0
 
 #### Compile tf_ops
 (1) To find tensorflow include path and library paths:
