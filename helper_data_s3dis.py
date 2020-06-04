@@ -5,6 +5,12 @@ import copy
 from random import shuffle
 import h5py
 
+# CAUTION: dangerous hacky stuff ----
+manual_block_id = 0
+manual_file_path = '/path/to/some/point_cloud_data.h5'
+
+
+# ------------------------------------
 
 class Data_Configs:
     sem_names = ['ceiling', 'floor', 'wall', 'beam', 'column', 'window', 'door',
@@ -63,8 +69,12 @@ class Data_S3DIS:
 
     @staticmethod
     def load_raw_data_file_s3dis_block(file_path):
-        block_id = int(file_path[-4:])
-        file_path = file_path[0:-5]
+        # CAUTION: dangerous hacky stuff
+        file_path = manual_file_path  # file_path = file_path[0:-5]
+        # block_id = int(file_path[-4:])
+        global manual_block_id
+        block_id = manual_block_id
+        manual_block_id += 1
 
         fin = h5py.File(file_path, 'r')
         coords = fin['coords'][block_id]
