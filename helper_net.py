@@ -26,12 +26,12 @@ class Ops:
     def variable_sum(var, name):
         with tf.name_scope(name):
             mean = tf.reduce_mean(var)
-            tf.summary.scalar('mean', mean)
+            tf.compat.v1.summary.scalar('mean', mean)
             stddev = tf.sqrt(tf.reduce_mean(tf.square(var - mean)))
-            tf.summary.scalar('stddev', stddev)
-            tf.summary.scalar('max', tf.reduce_max(var))
-            tf.summary.scalar('min', tf.reduce_min(var))
-            tf.summary.histogram('histogram', var)
+            tf.compat.v1.summary.scalar('stddev', stddev)
+            tf.compat.v1.summary.scalar('max', tf.reduce_max(var))
+            tf.compat.v1.summary.scalar('min', tf.reduce_min(var))
+            tf.compat.v1.summary.histogram('histogram', var)
 
     @staticmethod
     def variable_count():
@@ -50,8 +50,8 @@ class Ops:
         zero_init = tf.zeros_initializer()
         in_d = x.get_shape()[1]
         with tf.device('/cpu:0'):  # to create Variables stored on CPU memory
-            w = tf.get_variable(name + '_w', [in_d, out_d], initializer=xavier_init)
-            b = tf.get_variable(name + '_b', [out_d], initializer=zero_init)
+            w = tf.compat.v1.get_variable(name + '_w', [in_d, out_d], initializer=xavier_init)
+            b = tf.compat.v1.get_variable(name + '_b', [out_d], initializer=zero_init)
         y = tf.nn.bias_add(tf.matmul(x, w), b)
         Ops.variable_sum(w, name)
         return y
@@ -62,8 +62,8 @@ class Ops:
         zero_init = tf.zeros_initializer()
         in_c = x.get_shape()[3]
         with tf.device('/cpu:0'):  # to create Variables stored on CPU memory
-            w = tf.get_variable(name + '_w', [k[0], k[1], in_c, out_c], initializer=xavier_init)
-            b = tf.get_variable(name + '_b', [out_c], initializer=zero_init)
+            w = tf.compat.v1.get_variable(name + '_w', [k[0], k[1], in_c, out_c], initializer=xavier_init)
+            b = tf.compat.v1.get_variable(name + '_b', [out_c], initializer=zero_init)
 
         stride = [1, str, str, 1]
         y = tf.nn.bias_add(tf.nn.conv2d(x, w, stride, pad), b)
@@ -72,7 +72,7 @@ class Ops:
 
     @staticmethod
     def dropout(x, is_train, keep_prob, name):
-        y = tf.cond(is_train, lambda: tf.nn.dropout(x, keep_prob=keep_prob, name=name), lambda: x)
+        y = tf.cond(is_train, lambda: tf.nn.dropout(x, rate=1 - keep_prob, name=name), lambda: x)
         return y
 
     ####################################

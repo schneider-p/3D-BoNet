@@ -101,14 +101,14 @@ class Evaluation:
         net = BoNet(configs=configs)
 
         ####### 1. networks
-        net.X_pc = tf.placeholder(shape=[None, None, net.points_cc], dtype=tf.float32, name='X_pc')
-        net.is_train = tf.placeholder(dtype=tf.bool, name='is_train')
-        with tf.variable_scope('backbone'):
+        net.X_pc = tf.compat.v1.placeholder(shape=[None, None, net.points_cc], dtype=tf.float32, name='X_pc')
+        net.is_train = tf.compat.v1.placeholder(dtype=tf.bool, name='is_train')
+        with tf.compat.v1.variable_scope('backbone'):
             # net.point_features, net.global_features, net.y_psem_pred = net.backbone_pointnet(net.X_pc, net.is_train)
             net.point_features, net.global_features, net.y_psem_pred = net.backbone_pointnet2(net.X_pc, net.is_train)
-        with tf.variable_scope('bbox'):
+        with tf.compat.v1.variable_scope('bbox'):
             net.y_bbvert_pred_raw, net.y_bbscore_pred_raw = net.bbox_net(net.global_features)
-        with tf.variable_scope('pmask'):
+        with tf.compat.v1.variable_scope('pmask'):
             net.y_pmask_pred_raw = net.pmask_net(net.point_features, net.global_features, net.y_bbvert_pred_raw,
                                                  net.y_bbscore_pred_raw)
 
@@ -116,10 +116,10 @@ class Evaluation:
         if not os.path.isfile(model_path + '.data-00000-of-00001'):
             print('please download the released model!')
             return
-        config = tf.ConfigProto(allow_soft_placement=True)
+        config = tf.compat.v1.ConfigProto(allow_soft_placement=True)
         config.gpu_options.visible_device_list = '0'
-        net.sess = tf.Session(config=config)
-        tf.train.Saver().restore(net.sess, model_path)
+        net.sess = tf.compat.v1.Session(config=config)
+        tf.compat.v1.train.Saver().restore(net.sess, model_path)
         print('Model restored sucessful!')
 
         ####### 3. load data
