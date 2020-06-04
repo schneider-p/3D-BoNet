@@ -1,0 +1,17 @@
+# PyCharm
+.idea/
+
+# Python virtual environment
+.venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Data
+data_s3dis/
+*.mat
+
+# Compiled tf_ops
+*.so
+*.o
