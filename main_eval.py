@@ -5,6 +5,7 @@ import scipy.io
 import tensorflow as tf
 import glob
 import h5py
+import open3d as o3d
 
 
 class Eval_Tools:
@@ -120,7 +121,7 @@ class Evaluation:
         config.gpu_options.visible_device_list = '0'
         net.sess = tf.compat.v1.Session(config=config)
         tf.compat.v1.train.Saver().restore(net.sess, model_path)
-        print('Model restored sucessful!')
+        print('Model restored successfully!')
 
         ####### 3. load data
         from helper_data_s3dis import Data_S3DIS as Data
@@ -171,7 +172,7 @@ class Evaluation:
         from helper_data_s3dis import Data_Configs as Data_Configs
         configs = Data_Configs()
         mean_insSize_by_sem = Eval_Tools.get_mean_insSize_by_sem(dataset_path, train_areas)
-
+        print('Mean instance sizes: \n{}'.format(mean_insSize_by_sem))
         TP_FP_Total = {}
         for sem_id in configs.sem_ids:
             TP_FP_Total[sem_id] = {}
@@ -226,9 +227,9 @@ class Evaluation:
             #### if you need to visulize, please uncomment the follow lines
             from helper_data_plot import Plot as Plot
             Plot.draw_pc(np.concatenate([pc_all[:, 9:12], pc_all[:, 3:6]], axis=1))
-            Plot.draw_pc_semins(pc_xyz=pc_all[:, 9:12], pc_semins=ins_gt_all)
+            # Plot.draw_pc_semins(pc_xyz=pc_all[:, 9:12], pc_semins=ins_gt_all)
             Plot.draw_pc_semins(pc_xyz=pc_all[:, 9:12], pc_semins=ins_pred_all)
-            Plot.draw_pc_semins(pc_xyz=pc_all[:, 9:12], pc_semins=sem_gt_all)
+            # Plot.draw_pc_semins(pc_xyz=pc_all[:, 9:12], pc_semins=sem_gt_all)
             Plot.draw_pc_semins(pc_xyz=pc_all[:, 9:12], pc_semins=sem_pred_all)
             ####
 
@@ -273,6 +274,16 @@ class Evaluation:
                 TP_FP_Total[sem_id]['TP'] += np.sum(flag_pred)
                 TP_FP_Total[sem_id]['FP'] += len(flag_pred) - np.sum(flag_pred)
                 TP_FP_Total[sem_id]['Total'] += len(ins_gt_tp)
+
+            # write instance results to disk
+            np.savez_compressed('./log/ins_pred_by_sem_{}.npz'.format(scene_name), ins_pred_by_sem=ins_pred_by_sem,
+                                scene_name=scene_name)
+
+            pc_xyzrgb = np.concatenate([pc_all[:, 9:12], pc_all[:, 3:6]], axis=1)
+            pc = o3d.geometry.PointCloud()
+            pc.points = o3d.utility.Vector3dVector(pc_xyzrgb[:, 0:3])
+            pc.colors = o3d.utility.Vector3dVector(pc_xyzrgb[:, 3:6])
+            o3d.io.write_point_cloud('./log/pc_{}.xyzrgb'.format(scene_name), pc)
 
         ###############
         pre_all = []
